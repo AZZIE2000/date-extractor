@@ -155,7 +155,7 @@ const getDateTimeTags = (question: TokenizedQT): DateTimeSearchResult => {
         getNotMatchedQT(qt, indexes)
       );
       if (checkScore(sim, 0.01)) {
-        sim.matchScore.map((a, i) => {
+        sim.matchScore.map((a:number, i:number) => {
           if (a === 1) {
             const qtToRemove = mnth.month_name.split(" ")[i];
             indexes.push(getQTIndex(qt, qtToRemove));
@@ -182,7 +182,7 @@ const getDateTimeTags = (question: TokenizedQT): DateTimeSearchResult => {
     if (sim.score_pct === 1) {
       quarters_stop_search = true;
       temp_indexes.push();
-      sim.matchScore.map((a, i) => {
+      sim.matchScore.map((a:number, i:number) => {
         if (a === 1) {
           indexes.push(getQTIndex(qt, qrtr.quarter_name.split(" ")[i]));
         }

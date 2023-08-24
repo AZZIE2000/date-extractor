@@ -2,17 +2,24 @@
   "name": "date-extractor",
   "version": "1.0.0",
   "description": "text to date extractor in arabic and english",
-  "main": "index.ts",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "keywords": ["Date", "Arabic", "NLP"],
   "scripts": {
-    "dev": "npx nodemon",
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "build": "tsc",
+  "prepare" : "npm run build",
+  "version" : "git add -A src",
+  "postversion" : "git push && git push --tags"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nlp-infotointell/date-extractor.git"
   },
-  "author": "",
+  "author": "Infotointell",
   "license": "ISC",
+  "files": [
+    "src"
+  ],
   "bugs": {
     "url": "https://github.com/nlp-infotointell/date-extractor/issues"
   },
