@@ -4,12 +4,17 @@
   "description": "text to date extractor in arabic and english",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
-  "keywords": ["Date", "Arabic", "NLP"],
+  "keywords": [
+    "Date",
+    "Arabic",
+    "NLP"
+  ],
   "scripts": {
-  "build": "tsc",
-  "prepare" : "npm run build",
-  "version" : "git add -A src",
-  "postversion" : "git push && git push --tags"
+    "build": "tsc",
+    "prepare": "npm run build",
+    "version": "git add -A src",
+    "postversion": "git push && git push --tags",
+    "dev": "nodemon --exec ts-node src/index.ts"
   },
   "repository": {
     "type": "git",
