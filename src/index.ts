@@ -24,10 +24,20 @@ const toEnglishTokenize = (str: string): TokenizedQT => {
     .replace(/[^a-zA-Z0-9,.${}_\u0621-\u064A ]/g, "")
     .split(" ");
 };
-
-export const extractDate = (text: string) => {
+const extractDate = (text: string) => {
   const searchQuestion = descludeNotNeeded(toEnglishTokenize(text));
   const datetimeQuestionResult = getDateTimeTags(searchQuestion);
   return datetimeQuestionResult;
 }
+
+export  {
+  constants,
+  Desclude,
+  TokenizedQT,
+  getDateTimeTags,
+  toEnglishTokenize,
+  descludeNotNeeded,
+  extractDate
+};
+
 
