@@ -1,6 +1,6 @@
 /**
  * User Question
  */
-const uq = "مبيعات كيري السنة الحالية";
+const uq = "مبيعات كيري السنة اsadsaasdلحالية";
 
 
