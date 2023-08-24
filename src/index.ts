@@ -25,7 +25,7 @@ const toEnglishTokenize = (str: string): TokenizedQT => {
     .split(" ");
 };
 const dara: number = 0;
-const question = "مبيعات كيري 2020";
+const question = "مبيعات كيري السنة الماضية";
 const searchQuestion = descludeNotNeeded(toEnglishTokenize(question));
 const datetimeQuestionResult = getDateTimeTags(searchQuestion);
 
