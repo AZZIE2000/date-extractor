@@ -11,6 +11,6 @@
     "esModuleInterop": false,
     "resolveJsonModule": false,
     "noUnusedLocals": false,
-    "noUnusedParameters": false
+    "noUnusedParameters": false,
   }
 }

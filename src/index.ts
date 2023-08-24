@@ -24,9 +24,9 @@ const toEnglishTokenize = (str: string): TokenizedQT => {
     .replace(/[^a-zA-Z0-9,.${}_\u0621-\u064A ]/g, "")
     .split(" ");
 };
-const dara: number = 0;
-const question = "مبيعات كيري السنة الماضية";
+
+const question = "مبيعات كيري yesturday";
 const searchQuestion = descludeNotNeeded(toEnglishTokenize(question));
 const datetimeQuestionResult = getDateTimeTags(searchQuestion);
 
-console.log(datetimeQuestionResult);
+console.log(searchQuestion);
