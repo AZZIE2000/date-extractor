@@ -1,13 +1,5 @@
 export const constants = {
-  NULL: null,
-  FALSE: false,
-  TRUE: true,
-  ZERO: 0,
-  MINUS_ONE: -1,
-  ARRAY: [],
-  OBJECT: {},
 
-  SPAN_MATCH: '</?span[^>]*>',
 
   AR_REGEX_PATTERN: /[\u0600-\u06FF\u0750-\u077F]/,
 
@@ -16,23 +8,11 @@ export const constants = {
   ENGLISH_NUMBERS: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'],
 
   SUCCESS_CODE: 200,
-  ERROR_CODE: 500,
-  WRITE_SUCCESS_CODE: 201,
-  UNAUTH_CODE: 401,
-  NOTFOUND_CODE: 404,
+
   AR: 'ar',
   EN: 'en',
-  threshold: 0.79,
-  literal_factor: 1.1,
-  pct_factor: 0.9,
-  EQUAL: 'equal',
-  ANY: 'any',
-  BETWEEN: 'between',
-  GREATER: 'greater',
-  GREATER_EQUAL: 'greater-equal',
-  BELOW: 'below',
-  NOT_EQUAL: 'not-equal',
-  BELOW_EQUAL: 'below-equal',
+
+
 
   DATETIME_METRICS: ['day', 'week', 'month', 'quarter', 'year'],
 
