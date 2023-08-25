@@ -1,5 +1,5 @@
 import months from "../data/Month";
-import { DateTime } from "../interface/search.interface";
+// import { DateTime } from "../interface/search.interface";
 
 const getDaysPassed = (year: number) => {
   const dt = new Date();
