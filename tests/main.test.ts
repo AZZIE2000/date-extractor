@@ -1,7 +1,9 @@
-
-
+import DateParser from "../src";
+// const DateParser = require("../src/index.ts");
 describe("main", () => {
-  it("should be ok", () => {
-    expect(1).toBe(3);
+  it("no case", () => {
+    const result = new DateParser("").execute();
+    const date = new Date();
+    expect(result.year).toBe(date.getFullYear());
   });
 });

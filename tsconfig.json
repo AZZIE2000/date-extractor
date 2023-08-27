@@ -1,12 +1,21 @@
 {
   "compilerOptions": {
+    "baseUrl": ".",
+    "allowJs": true,
+    "sourceMap": true,
+    "outDir": "dist",
+    "rootDir": "src",
+    "lib": ["esnext"],
+    "esModuleInterop": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
     "target": "es5",
-    "module": "commonjs",
-    "declaration": true,
-    "outDir": "./lib",
-    "strict": true,
-    "noImplicitAny": false
+    "downlevelIteration": true,
+    "paths": {
+      "@performit/*": ["src/*"],
+      "@utils/*": ["src/utils*"]
+    }
   },
-  "include": ["src", "tests"],
-  "exclude": ["node_modules", "**/__tests__/*"]
+  "typeRoots": ["@types"],
+  "include": ["src/**/*"]
 }
