@@ -1,4 +1,5 @@
 import axios from "axios";
+import similarity from "similarity";
 
 /**
  * curl ^
@@ -68,6 +69,7 @@ const emptyDateTime: DateTime = {
   month_name_ar: "",
   month_name_en: "",
 };
+console.log("-----------------------------------------");
 
 class DateHelpers {
   protected date: Date;
@@ -207,21 +209,48 @@ class ParserHelpers {
   public preparedText = (text: string): string =>
     text.normalize("NFKD").replace(/[\u064b-\u065f]/g, "");
 
-  public beforeAfter_num_Date(text: string): {
+  public getUnit = (text: string): "YEAR" | "MONTH" | "WEEK" | "DAY" | null => {
+    let foundUnit = null;
+    let index = 0;
+    const units = {
+      سنة_سنه_سنين: "YEAR",
+      شهر_شهور_اشهر_أشهر: "MONTH",
+      اسبوع_اسابيع_أسابيع: "WEEK",
+      يوم_ايام: "DAY",
+    };
+    const dataToFilter = Object.keys(units);
+    const preparedText = this.preparedText(text);
+    while (!foundUnit && index < dataToFilter.length) {
+      const unit = dataToFilter[index].split("_");
+      for (let i = 0; i < unit.length; i++) {
+        const score = similarity(preparedText, unit[i]);
+        console.log(score);
+        if (score > 0.85) {
+          foundUnit = units[dataToFilter[index]];
+          break;
+        }
+      }
+      index++;
+    }
+    return foundUnit;
+  };
+  public beforeAfter_num_date_AR(text: string): {
     fullText: string;
     direction: string;
     number: string | null;
     unit: string;
   } | null {
-    const beforAfterRegex = /(قبل|بعد) ?(\d+)? (ايام|اسابيع|ا?شهر|اسبوع)/gm;
+    const beforAfterRegex =
+      /(قبل|بعد) ?(\d+)? (ايام|اسابيع|(?:ا|أ)?شهر|(?:ا|أ)سبوع|يوم)/gm;
     let match;
     while ((match = beforAfterRegex.exec(text)) !== null) {
       match.fullText = match[0];
       match.direction = match[1];
-      match.number = match[2] === "N/A" ? null : match[2];
+      match.number = match[2] === "N/A" ? 1 : match[2];
       match.unit = match[3];
+      return match;
     }
-    return match;
+    return null;
   }
 }
 export default class DateParser {
@@ -259,8 +288,24 @@ export default class DateParser {
     };
   }
 
+  private beforeAfter_num_date_AR_process() {
+    const object = this.helpers.beforeAfter_num_date_AR(this.userPrompt);
+    if (!object) return console.log("no match"); // return new Date()
+    if (object) {
+      const res2 = this.helpers.getUnit(object.unit);
+    }
+  }
+
   private processPrompt() {
     // my own date parser
+    const res = this.helpers.beforeAfter_num_date_AR(this.userPrompt);
+    const res2 = this.helpers.getUnit(res.unit);
+    console.log("🪲🪲🪲🪲🪲🪲🪲🪲🪲🪲🪲");
+    console.log(res);
+    console.log("🪲🪲🪲🪲🪲🪲🪲🪲🪲🪲🪲");
+    console.log(res2);
+    console.log("🪲🪲🪲🪲🪲🪲🪲🪲🪲🪲🪲");
+
     // if faliure, use wit.ai\
     // if faliure, return new Date()
 
@@ -273,44 +318,49 @@ export default class DateParser {
   }
 }
 
+new DateParser("قبل 50 شهر").execute();
 // const test = /قبل \d+ ([اأ]يام|شهر|اشهر|اسبوع)/gm;
 // const word = "قبل 5 ايام";
 // const res = new RegExp(test).test(word);
 // console.log(res);
 
-console.log(5555555555555555555555555);
+// console.log(5555555555555555555555555);
 
-const word = "قبل 5 أيام";
-const word2 = "بعد شهر";
+// const word = "قبل 5 أيام";
+// const word2 = "بعد شهر";
 
-let word3 = "بعد ثلاث شهور و اثنان يوم";
-const cases = ["واحد", "اثنين|اثنان", "تلت|ثلاث|ثلاثة|ثلث|تلاتة"];
+// let word3 = "بعد ثلاث شهور و اثنان يوم";
+// const cases = ["واحد", "اثنين|اثنان", "تلت|ثلاث|ثلاثة|ثلث|تلاتة"];
 
-cases.forEach((c, i) => {
-  console.log("------------------", i);
-  const test = new RegExp(c, "gm");
-  let res;
-  while ((res = test.exec(word3)) !== null) {
-    console.log(res[0]);
-    word3 = word3.replaceAll(res[0], `${i + 1}`);
-  }
-
-});
-console.log(word3);
-function matchTimeUnits(text: string) {
-  const beforAfterRegex = /(قبل|بعد) ?(\d+)? (ايام|اسابيع|ا?شهر|اسبوع)/gm;
-  const preparedText = text.normalize("NFKD").replace(/[\u064b-\u065f]/g, "");
-  let match;
-  while ((match = beforAfterRegex.exec(preparedText)) !== null) {
-    console.log("Matched:", match[0]); // The whole matched pattern
-    console.log("Before/After:", match[1]); // قبل or بعد
-    console.log("Number:", match[2] || "N/A"); // The matched numeric value or "N/A" if not present
-    console.log("Time unit:", match[3]); // The matched time unit
-  }
-}
-const ss = /(واحد|اثن(?:ين|ان)?|ثلاث(?:ة|ه)?)/gm;
-const testText = " ثلاثه واحد";
-let match;
-// while ((match = ss.exec(testText)) !== null) {
-//   console.log(match);
+// cases.forEach((c, i) => {
+//   console.log("------------------", i);
+//   const test = new RegExp(c, "gm");
+//   let res;
+//   while ((res = test.exec(word3)) !== null) {
+//     console.log(res[0]);
+//     word3 = word3.replaceAll(res[0], `${i + 1}`);
+//   }
+// });
+// console.log(word3);
+// function matchTimeUnits(text: string) {
+//   const beforAfterRegex = /(قبل|بعد) ?(\d+)? (ايام|اسابيع|ا?شهر|(?:ا|أ)سبوع)/gm;
+//   const preparedText = text.normalize("NFKD").replace(/[\u064b-\u065f]/g, "");
+//   let match;
+//   while ((match = beforAfterRegex.exec(preparedText)) !== null) {
+//     console.log("Matched:", match[0]); // The whole matched pattern
+//     console.log("Before/After:", match[1]); // قبل or بعد
+//     console.log("Number:", match[2] || "N/A"); // The matched numeric value or "N/A" if not present
+//     console.log("Time unit:", match[3]); // The matched time unit
+//   }
 // }
+// const ss = /(واحد|اثن(?:ين|ان)?|ثلاث(?:ة|ه)?)/gm;
+// const testText = " ثلاثه واحد";
+// let match;
+
+// // NOTE: SET EXAMPLE
+// // var theDate = new Date(2013, 12, 15);
+// // console.log(theDate);
+// // var myNewDate = new Date(theDate);
+// // myNewDate.setDate(myNewDate.getDate() - 1);
+// // myNewDate.setMonth(myNewDate.getMonth() - 1);
+// // console.log(myNewDate);
