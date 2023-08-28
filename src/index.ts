@@ -68,8 +68,8 @@ const emptyDateTime: DateTime = {
   day_date: "",
   month_name_ar: "",
   month_name_en: "",
+
 };
-console.log("-----------------------------------------");
 
 class DateHelpers {
   protected date: Date;
@@ -232,6 +232,8 @@ class ParserHelpers {
       }
       index++;
     }
+    console.log(foundUnit);
+
     return foundUnit;
   };
   public beforeAfter_num_date_AR(text: string): {
@@ -246,8 +248,11 @@ class ParserHelpers {
     while ((match = beforAfterRegex.exec(text)) !== null) {
       match.fullText = match[0];
       match.direction = match[1];
-      match.number = match[2] === "N/A" ? 1 : match[2];
+      match.number = !match[2] ? 1 : match[2];
       match.unit = match[3];
+      console.log("match");
+      console.log(match);
+      
       return match;
     }
     return null;
@@ -257,8 +262,7 @@ export default class DateParser {
   private userPrompt: string;
   private result = emptyDateTime;
   private helpers = new ParserHelpers();
-  resDate = "2024-02-28T23:00:00.000+03:00";
-  private date: Date = new Date(this.resDate);
+  private date: Date = new Date();
 
   constructor(prompt: string) {
     this.userPrompt = this.helpers.preparedText(prompt);
@@ -290,35 +294,61 @@ export default class DateParser {
 
   private beforeAfter_num_date_AR_process() {
     const object = this.helpers.beforeAfter_num_date_AR(this.userPrompt);
-    if (!object) return console.log("no match"); // return new Date()
+    if (!object) return console.log("no match"); // return PASS to next
+    const oprator = object.direction == "قبل" ? "-" : "+";
     if (object) {
       const res2 = this.helpers.getUnit(object.unit);
+      if (!res2) return console.log("no unit"); // return PASS to next
+      const theDate = this.date;
+      const newDate = new Date(theDate);
+
+      switch (res2) {
+        case "YEAR":
+          newDate.setFullYear(
+            newDate.getFullYear() - Number(oprator + object.number)
+          );
+          break;
+        case "MONTH":
+          newDate.setMonth(
+            newDate.getMonth() - Number(oprator + object.number)
+          );
+          break;
+        case "WEEK":
+          newDate.setDate(
+            newDate.getDate() - Number(oprator + `${Number(object.number) * 7}`)
+          );
+          break;
+        case "DAY":
+          console.log("day");
+          console.log(newDate.getDate() + Number(oprator + object.number));
+
+          newDate.setDate(newDate.getDate() + Number(oprator + object.number));
+          break;
+      }
+      console.log(this.date);
+      console.log(newDate);
+
+      this.date = newDate;
     }
   }
 
   private processPrompt() {
-    // my own date parser
-    const res = this.helpers.beforeAfter_num_date_AR(this.userPrompt);
-    const res2 = this.helpers.getUnit(res.unit);
-    console.log("🪲🪲🪲🪲🪲🪲🪲🪲🪲🪲🪲");
-    console.log(res);
-    console.log("🪲🪲🪲🪲🪲🪲🪲🪲🪲🪲🪲");
-    console.log(res2);
-    console.log("🪲🪲🪲🪲🪲🪲🪲🪲🪲🪲🪲");
-
+    this.beforeAfter_num_date_AR_process();
     // if faliure, use wit.ai\
     // if faliure, return new Date()
-
-    this.date = new Date();
   }
   public execute() {
+ 
     this.processPrompt();
     this.build();
     return this.result;
   }
 }
 
-new DateParser("قبل 50 شهر").execute();
+const ress = new DateParser("بعد 5 ايام").execute();
+console.log("-----------------------------------------");
+console.log(ress);
+console.log("-----------------------------------------");
 // const test = /قبل \d+ ([اأ]يام|شهر|اشهر|اسبوع)/gm;
 // const word = "قبل 5 ايام";
 // const res = new RegExp(test).test(word);
@@ -358,9 +388,9 @@ new DateParser("قبل 50 شهر").execute();
 // let match;
 
 // // NOTE: SET EXAMPLE
-// // var theDate = new Date(2013, 12, 15);
-// // console.log(theDate);
-// // var myNewDate = new Date(theDate);
-// // myNewDate.setDate(myNewDate.getDate() - 1);
-// // myNewDate.setMonth(myNewDate.getMonth() - 1);
-// // console.log(myNewDate);
+// var theDate = new Date(2013, 12, 15);
+// console.log(theDate);
+// var myNewDate = new Date(theDate);
+// myNewDate.setDate(myNewDate.getDate() - 1);
+// myNewDate.setMonth(myNewDate.getMonth() - 1);
+// console.log(myNewDate);
