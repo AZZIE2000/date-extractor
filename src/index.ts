@@ -1,4 +1,5 @@
 import axios from "axios";
+import { after } from "node:test";
 import similarity from "similarity";
 
 /**
@@ -21,7 +22,7 @@ const apiCall = async (userQuestion: string) => {
       console.log(err);
     });
 };
-console.log(new Date());
+// console.log(new Date());
 
 interface DateTime {
   year: number;
@@ -223,7 +224,7 @@ class ParserHelpers {
       const unit = dataToFilter[index].split("_");
       for (let i = 0; i < unit.length; i++) {
         const score = similarity(preparedText, unit[i]);
-        console.log(score);
+        // console.log(score);
         if (score > 0.85) {
           foundUnit = units[dataToFilter[index]];
           break;
@@ -231,7 +232,7 @@ class ParserHelpers {
       }
       index++;
     }
-    console.log(foundUnit);
+    // console.log(foundUnit);
 
     return foundUnit;
   };
@@ -249,9 +250,7 @@ class ParserHelpers {
       match.direction = match[1];
       match.number = !match[2] ? 1 : match[2];
       match.unit = match[3];
-      console.log("match");
-      console.log(match);
-
+ 
       return match;
     }
     return null;
@@ -266,9 +265,9 @@ export default class DateParser {
   constructor(prompt: string) {
     this.userPrompt = this.helpers.preparedText(prompt);
   }
-  private build() {
-    const DTHelpers = new DateHelpers(this.date);
-    this.result = {
+  private build(date: Date = this.date): DateTime {
+    const DTHelpers = new DateHelpers(date);
+    return {
       year: DTHelpers.getYear(),
       quarter: DTHelpers.getQuarter(),
       month: DTHelpers.getMonth(),
@@ -290,18 +289,38 @@ export default class DateParser {
       month_name_en: DTHelpers.getMonthName("en", DTHelpers.getMonth()),
     };
   }
+  
+  private validateNewDate(date: Date) {
+    console.log("Before");
+    console.log(this.result);
+    const oldDateObj = this.result;
+    const newDateObj = this.build(date);
+    // check what changed and return the changed values or keep the old ones untouched
+    const changedValues = Object.keys(oldDateObj).filter(
+      (key) => oldDateObj[key] !== newDateObj[key] && !key.includes("curr_")
+      );
+      console.log(changedValues);
+      
+      changedValues.forEach((key) => {
+        this.result[key] = newDateObj[key];
+      });
+      
+      console.log("after");
+    console.log(this.result);
+    // this.result = newDateObj
+  }
 
   private beforeAfter_num_date_AR_process() {
     const object = this.helpers.beforeAfter_num_date_AR(this.userPrompt);
     if (!object) return console.log("no match"); // return PASS to next
     const oprator = object.direction == "قبل" ? "-" : "+";
     if (object) {
-      const res2 = this.helpers.getUnit(object.unit);
-      if (!res2) return console.log("no unit"); // return PASS to next
+      const dateUnit = this.helpers.getUnit(object.unit);
+      if (!dateUnit) return console.log("no unit"); // return PASS to next
       const theDate = this.date;
       const newDate = new Date(theDate);
 
-      switch (res2) {
+      switch (dateUnit) {
         case "YEAR":
           newDate.setFullYear(
             newDate.getFullYear() - Number(oprator + object.number)
@@ -318,9 +337,10 @@ export default class DateParser {
           );
           break;
         case "DAY":
-          const DTHelpers = new DateHelpers(newDate);
+          // const DTHelpers = new DateHelpers(newDate);
           newDate.setDate(newDate.getDate() + Number(oprator + object.number));
-          this.result.day = DTHelpers.getDay(newDate);
+          // this.result.day = DTHelpers.getDay(newDate);
+          this.validateNewDate(newDate);
           break;
       }
     }
@@ -332,58 +352,13 @@ export default class DateParser {
     // if faliure, return new Date()
   }
   public execute() {
-    this.build();
+    this.result = this.build();
     this.processPrompt();
     return this.result;
   }
 }
 
-const ress = new DateParser("بعد 5 ايام").execute();
-console.log("-----------------------------------------");
-console.log(ress);
-console.log("-----------------------------------------");
-// const test = /قبل \d+ ([اأ]يام|شهر|اشهر|اسبوع)/gm;
-// const word = "قبل 5 ايام";
-// const res = new RegExp(test).test(word);
-// console.log(res);
-
-// console.log(5555555555555555555555555);
-
-// const word = "قبل 5 أيام";
-// const word2 = "بعد شهر";
-
-// let word3 = "بعد ثلاث شهور و اثنان يوم";
-// const cases = ["واحد", "اثنين|اثنان", "تلت|ثلاث|ثلاثة|ثلث|تلاتة"];
-
-// cases.forEach((c, i) => {
-//   console.log("------------------", i);
-//   const test = new RegExp(c, "gm");
-//   let res;
-//   while ((res = test.exec(word3)) !== null) {
-//     console.log(res[0]);
-//     word3 = word3.replaceAll(res[0], `${i + 1}`);
-//   }
-// });
-// console.log(word3);
-// function matchTimeUnits(text: string) {
-//   const beforAfterRegex = /(قبل|بعد) ?(\d+)? (ايام|اسابيع|ا?شهر|(?:ا|أ)سبوع)/gm;
-//   const preparedText = text.normalize("NFKD").replace(/[\u064b-\u065f]/g, "");
-//   let match;
-//   while ((match = beforAfterRegex.exec(preparedText)) !== null) {
-//     console.log("Matched:", match[0]); // The whole matched pattern
-//     console.log("Before/After:", match[1]); // قبل or بعد
-//     console.log("Number:", match[2] || "N/A"); // The matched numeric value or "N/A" if not present
-//     console.log("Time unit:", match[3]); // The matched time unit
-//   }
-// }
-// const ss = /(واحد|اثن(?:ين|ان)?|ثلاث(?:ة|ه)?)/gm;
-// const testText = " ثلاثه واحد";
-// let match;
-
-// // NOTE: SET EXAMPLE
-// var theDate = new Date(2013, 12, 15);
-// console.log(theDate);
-// var myNewDate = new Date(theDate);
-// myNewDate.setDate(myNewDate.getDate() - 1);
-// myNewDate.setMonth(myNewDate.getMonth() - 1);
-// console.log(myNewDate);
+const ress = new DateParser("قبل 50 ايام").execute();
+// console.log("-----------------------------------------");
+// console.log(ress);
+// console.log("-----------------------------------------");
