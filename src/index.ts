@@ -68,7 +68,6 @@ const emptyDateTime: DateTime = {
   day_date: "",
   month_name_ar: "",
   month_name_en: "",
-
 };
 
 class DateHelpers {
@@ -252,7 +251,7 @@ class ParserHelpers {
       match.unit = match[3];
       console.log("match");
       console.log(match);
-      
+
       return match;
     }
     return null;
@@ -319,16 +318,11 @@ export default class DateParser {
           );
           break;
         case "DAY":
-          console.log("day");
-          console.log(newDate.getDate() + Number(oprator + object.number));
-
+          const DTHelpers = new DateHelpers(newDate);
           newDate.setDate(newDate.getDate() + Number(oprator + object.number));
+          this.result.day = DTHelpers.getDay(newDate);
           break;
       }
-      console.log(this.date);
-      console.log(newDate);
-
-      this.date = newDate;
     }
   }
 
@@ -338,9 +332,8 @@ export default class DateParser {
     // if faliure, return new Date()
   }
   public execute() {
- 
-    this.processPrompt();
     this.build();
+    this.processPrompt();
     return this.result;
   }
 }
