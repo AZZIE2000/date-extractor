@@ -232,7 +232,9 @@ class ParserHelpers {
     return 1;
   };
 
-  public getUnit = (text: string): "YEAR" | "MONTH" | "WEEK" | "DAY" | "HOUR" | null => {
+  public getUnit = (
+    text: string
+  ): "YEAR" | "MONTH" | "WEEK" | "DAY" | "HOUR" | null => {
     let foundUnit = null;
     let index = 0;
     const units = {
@@ -242,12 +244,10 @@ class ParserHelpers {
       يوم_ايام: "DAY",
     };
     const dataToFilter = Object.keys(units);
-
     while (!foundUnit && index < dataToFilter.length) {
       const unit = dataToFilter[index].split("_");
       for (let i = 0; i < unit.length; i++) {
         const score = similarity(text, unit[i]);
-        
         if (score > 0.85) {
           foundUnit = units[dataToFilter[index]];
           break;
@@ -255,7 +255,6 @@ class ParserHelpers {
       }
       index++;
     }
-
     return foundUnit;
   };
   public beforeAfter_num_date_AR(text: string): {
@@ -264,8 +263,6 @@ class ParserHelpers {
     number: string | null;
     unit: string;
   } | null {
-    console.log(text);
-
     const beforAfterRegex =
       /(قبل|بعد) ?(\d+)? (ايام|اسابيع|(?:ا|أ)?شهر|(?:ا|أ)سبوع|يوم|سنين|سنوات|سنه)/gm;
     let match;
@@ -274,17 +271,12 @@ class ParserHelpers {
       match.direction = match[1];
       match.number = !match[2] ? 1 : match[2];
       match.unit = match[3];
-      console.log("match");
-      console.log(match);
-
       return match;
     }
     return null;
   }
 
   public async getWitAiResponse(text: string, isArabic: boolean) {
-    console.log("WIT IS WORKING 🟢🟢🟢🟢🟢🟢🔴🔴🔴🔴🔴🔴🔴");
-
     const token = isArabic
       ? "XTTA326P36O52BV2WZVN345JHFV4265O"
       : "JBDXCFH25LDRPPBLX5JERPD2VLWMPEDH";
@@ -295,14 +287,15 @@ class ParserHelpers {
         },
       })
       .then((res) => {
-        // console.log(res);
-
-        console.log("WIT SUCCESS 🟢🟢🟢🟢🟢🟢🔴🔴🔴🔴🔴🔴🔴");
-        return res?.data;
+        const data = res?.data?.entities["wit$datetime:datetime"];
+        if (data) {
+          return res?.data;
+        } else {
+          return null;
+        }
       })
       .catch((err) => {
-        console.log("WIT FAILED 🟢🟢🟢🟢🟢🟢🔴🔴🔴🔴🔴🔴🔴");
-        console.log(err);
+        return null;
       });
   }
   public simplifyText(text: string) {
@@ -318,7 +311,20 @@ class ParserHelpers {
       .replaceAll("العام الماضي", "قبل سنه")
       .replaceAll("العام السابق", "قبل سنه")
       .replaceAll("الشهر الماضي", "قبل شهر")
-      .replaceAll("الشهر السابق", "قبل شهر");
+      .replaceAll("الشهر السابق", "قبل شهر")
+      .replaceAll("الشهر الفائت", "قبل شهر")
+      .replaceAll("الشهر الي فات", "قبل شهر")
+      .replaceAll("الشهر الي مضى", "قبل شهر")
+      .replaceAll("الاسبوع الماضي", "قبل اسبوع")
+      .replaceAll("الاسبوع السابق", "قبل اسبوع")
+      .replaceAll("الاسبوع الفائت", "قبل اسبوع")
+      .replaceAll("الاسبوع الي فات", "قبل اسبوع")
+      .replaceAll("الاسبوع الي مضى", "قبل اسبوع")
+      .replaceAll("اليوم الماضي", "قبل يوم")
+      .replaceAll("اليوم السابق", "قبل يوم")
+      .replaceAll("قبل يومين", "قبل 2 يوم")
+      .replaceAll("اول مبارح", "قبل 2 يوم")
+      .replaceAll("اول امبارح", "قبل 2 يوم");
   }
 }
 export default class DateParser {
@@ -379,22 +385,14 @@ export default class DateParser {
       const newDate = new Date(theDate);
       switch (dateUnit) {
         case "YEAR":
-          console.log(`${oprator + object.number}`);
-
           newDate.setFullYear(
             newDate.getFullYear() + Number(`${oprator + object.number}`)
           );
           break;
         case "MONTH":
-          console.log(newDate.getMonth());
-          console.log("object.number", object.number);
-          console.log("oprator", oprator);
-
           newDate.setMonth(
             newDate.getMonth() + Number(`${oprator + object.number}`)
           );
-          console.log(newDate.getMonth());
-
           break;
         case "WEEK":
           newDate.setDate(
@@ -404,7 +402,6 @@ export default class DateParser {
           break;
         case "DAY":
           newDate.setDate(newDate.getDate() + Number(oprator + object.number));
-
           break;
       }
       if (this.date !== newDate) this.validateNewDate(newDate);
@@ -413,48 +410,31 @@ export default class DateParser {
 
   private async processPrompt() {
     const isArabic = this.helpers.textLanguage(this.userPrompt) === 1;
-    console.log("isArabic", isArabic);
 
     if (isArabic) {
       this.beforeAfter_num_date_AR_process();
-      //  filter 2
-      //  filter 3
-      //  filter 4
     } else {
       // filter 1 en
-      // filter 2 en ...
     }
-
-    // if faliure, use wit.ai\
     if (!this.stopSearch) {
       await this.helpers
         .getWitAiResponse(this.userPrompt, isArabic)
         .then((res) => {
-          if (
-            !res ||
-            !res.entities ||
-            !res?.entities["wit$datetime:datetime"]?.length
-          )
-            return;
+          if (!res) return;
           const date = new Date(
             res?.entities["wit$datetime:datetime"][0].value
           );
-          console.log(date);
 
-          const newDateObj = this.build(date);
           this.validateNewDate(date);
         });
     }
-    // if faliure, return new Date()
   }
   private preprocessText() {
-    // find the language
     this.userPrompt = this.helpers.preparedText(this.userPrompt);
     const isArabic = this.helpers.textLanguage(this.userPrompt) === 1;
     if (isArabic) {
       this.userPrompt = this.helpers.simplifyText(this.userPrompt);
     }
-    // hanldle english cases
   }
   public async execute() {
     this.preprocessText();
@@ -468,7 +448,7 @@ export default class DateParser {
   }
 }
 
-new DateParser("مبيعات قبل ثلاث ايام ").execute().then((res) => {
+new DateParser("مبيعات بطيخ").execute().then((res) => {
   console.log("-----------------------------------------");
   console.log(res);
   console.log("-----------------------------------------");
