@@ -1,16 +1,15 @@
 import DateParser from "../src";
 // const DateParser = require("../src/index.ts");
-describe("main cases", () => {
-  it("no case", () => {
-    const result = new DateParser("").execute();
+//  NOTE : normal cases
+  describe("day", () => {
     const date = new Date();
-    expect(result.year).toBe(date.getFullYear());
+    it("day format one", () => {
+      const result = new DateParser("قبل 2 يوم").execute();
+      
+      
+      expect(result.day).toBe(date.getDate() - 2);
+    });
+
+    
   });
-});
-describe("edge cases", () => {
-  it("no case", () => {
-    const result = new DateParser("").execute();
-    const date = new Date();
-    expect(result.year).toBe(date.getFullYear());
-  });
-});
+

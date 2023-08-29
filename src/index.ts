@@ -250,7 +250,7 @@ class ParserHelpers {
       match.direction = match[1];
       match.number = !match[2] ? 1 : match[2];
       match.unit = match[3];
- 
+
       return match;
     }
     return null;
@@ -289,23 +289,23 @@ export default class DateParser {
       month_name_en: DTHelpers.getMonthName("en", DTHelpers.getMonth()),
     };
   }
-  
+
   private validateNewDate(date: Date) {
     console.log("Before");
     console.log(this.result);
     const oldDateObj = this.result;
     const newDateObj = this.build(date);
-    // check what changed and return the changed values or keep the old ones untouched
+
     const changedValues = Object.keys(oldDateObj).filter(
       (key) => oldDateObj[key] !== newDateObj[key] && !key.includes("curr_")
-      );
-      console.log(changedValues);
-      
-      changedValues.forEach((key) => {
-        this.result[key] = newDateObj[key];
-      });
-      
-      console.log("after");
+    );
+    console.log(changedValues);
+
+    changedValues.forEach((key) => {
+      this.result[key] = newDateObj[key];
+    });
+
+    console.log("after");
     console.log(this.result);
     // this.result = newDateObj
   }
@@ -337,12 +337,11 @@ export default class DateParser {
           );
           break;
         case "DAY":
-          // const DTHelpers = new DateHelpers(newDate);
           newDate.setDate(newDate.getDate() + Number(oprator + object.number));
-          // this.result.day = DTHelpers.getDay(newDate);
-          this.validateNewDate(newDate);
+
           break;
       }
+      if (this.date !== newDate) this.validateNewDate(newDate);
     }
   }
 
@@ -359,6 +358,6 @@ export default class DateParser {
 }
 
 const ress = new DateParser("قبل 50 ايام").execute();
-// console.log("-----------------------------------------");
-// console.log(ress);
-// console.log("-----------------------------------------");
+console.log("-----------------------------------------");
+console.log(ress);
+console.log("-----------------------------------------");
