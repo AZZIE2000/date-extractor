@@ -7,6 +7,15 @@ import similarity from "similarity";
   -H "Authorization: Bearer XTTA326P36O52BV2WZVN345JHFV4265O" ^
   "https://api.wit.ai/message?v=20230825&q="
  */
+const commonDTTriggers = {
+  "last year|previous year|السنه الماضيه|السنه السابقه|العام الماضي|العام السابق":
+    "PREVIOUS_YEAR",
+  "last month|previous month|month before|الشهر الماضي|الشهر السابق":
+    "PREVIOUS_MONTH",
+  "last week|previous week|الشهر الماضي|الشهرالسابق|الشهر الفائت|الشهر الي فات|الشهر الي مضى":
+    "PREVIOUS_WEEK",
+  "yesterday|مبارح|امبارح|البارحه|اليوم الماضي": "PREVIOUS_DAY",
+};
 
 const apiCall = async (userQuestion: string) => {
   axios
@@ -316,10 +325,9 @@ export default class DateParser {
     const oprator = object.direction == "قبل" ? "-" : "+";
     if (object) {
       const dateUnit = this.helpers.getUnit(object.unit);
-      if (!dateUnit) return console.log("no unit"); // return PASS to next
+      if (!dateUnit) return console.log("no unit");
       const theDate = this.date;
       const newDate = new Date(theDate);
-
       switch (dateUnit) {
         case "YEAR":
           newDate.setFullYear(
