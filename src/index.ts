@@ -221,6 +221,15 @@ class ParserHelpers {
   public preparedText = (text: string): string =>
     text.normalize("NFKD").replace(/[\u064b-\u065f]/g, "");
 
+  public textLanguage = (text: string): 1 | 2 => {
+    const preparedText = this.preparedText(text);
+    const arabicRegex = /[\u0600-\u06FF\u0750-\u077F]/;
+    const englishRegex = /[a-zA-Z]/;
+    if (arabicRegex.test(preparedText)) return 1;
+    if (englishRegex.test(preparedText)) return 2;
+    return 1;
+  };
+
   public getUnit = (text: string): "YEAR" | "MONTH" | "WEEK" | "DAY" | null => {
     let foundUnit = null;
     let index = 0;
@@ -266,12 +275,37 @@ class ParserHelpers {
     }
     return null;
   }
+
+  public async getWitAiResponse(text: string, isArabic: boolean) {
+    console.log("WIT IS WORKING 🟢🟢🟢🟢🟢🟢🔴🔴🔴🔴🔴🔴🔴");
+    
+    const token = isArabic
+    ? "XTTA326P36O52BV2WZVN345JHFV4265O"
+    : "JBDXCFH25LDRPPBLX5JERPD2VLWMPEDH";
+    return await axios
+    .get(`https://api.wit.ai/message?q=${text}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+    .then((res) => {
+      // console.log(res);
+      
+      console.log("WIT SUCCESS 🟢🟢🟢🟢🟢🟢🔴🔴🔴🔴🔴🔴🔴");
+      return res?.data;
+    })
+    .catch((err) => {
+      console.log("WIT FAILED 🟢🟢🟢🟢🟢🟢🔴🔴🔴🔴🔴🔴🔴");
+      console.log(err);
+      });
+  }
 }
 export default class DateParser {
   private userPrompt: string;
   private result = emptyDateTime;
   private helpers = new ParserHelpers();
   private date: Date = new Date();
+  private stopSearch: boolean = false;
   constructor(prompt: string) {
     this.userPrompt = this.helpers.preparedText(prompt);
   }
@@ -301,28 +335,20 @@ export default class DateParser {
   }
 
   private validateNewDate(date: Date) {
-    console.log("Before");
-    console.log(this.result);
     const oldDateObj = this.result;
     const newDateObj = this.build(date);
-
     const changedValues = Object.keys(oldDateObj).filter(
       (key) => oldDateObj[key] !== newDateObj[key] && !key.includes("curr_")
     );
-    console.log(changedValues);
-
     changedValues.forEach((key) => {
       this.result[key] = newDateObj[key];
     });
-
-    console.log("after");
-    console.log(this.result);
-    // this.result = newDateObj
   }
 
   private beforeAfter_num_date_AR_process() {
+    if (this.stopSearch) return;
     const object = this.helpers.beforeAfter_num_date_AR(this.userPrompt);
-    if (!object) return console.log("no match"); // return PASS to next
+    if (!object) return (this.stopSearch = true);
     const oprator = object.direction == "قبل" ? "-" : "+";
     if (object) {
       const dateUnit = this.helpers.getUnit(object.unit);
@@ -363,19 +389,49 @@ export default class DateParser {
     }
   }
 
-  private processPrompt() {
-    this.beforeAfter_num_date_AR_process();
+  private async processPrompt() {
+    const isArabic = this.helpers.textLanguage(this.userPrompt) === 1;
+    if (isArabic) {
+      this.beforeAfter_num_date_AR_process();
+      //  filter 2
+      //  filter 3
+      //  filter 4
+    } else {
+      // filter 1 en
+      // filter 2 en ...
+    }
+
     // if faliure, use wit.ai\
+    if (!this.stopSearch) {
+      await this.helpers
+        .getWitAiResponse(this.userPrompt, isArabic)
+        .then((res) => {
+          if (
+            !res ||
+            !res.entities ||
+            !res?.entities["wit$datetime:datetime"]?.length
+          )
+            return;
+          const date = new Date(
+            res?.entities["wit$datetime:datetime"][0].value
+          );
+          console.log(date);
+
+          const newDateObj = this.build(date);
+          this.validateNewDate(date);
+        });
+    }
     // if faliure, return new Date()
   }
-  public execute() {
+  public async execute() {
     this.result = this.build();
-    this.processPrompt();
+    await this.processPrompt();
     return this.result;
   }
 }
 
-const ress = new DateParser("قبل 5 ").execute();
-console.log("-----------------------------------------");
-console.log(ress);
-console.log("-----------------------------------------");
+new DateParser("sales now").execute().then((res) => {
+  console.log("-----------------------------------------");
+  console.log(res);
+  console.log("-----------------------------------------");
+});
