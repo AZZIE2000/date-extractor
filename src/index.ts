@@ -116,7 +116,7 @@ class DateHelpers {
         "ديسمبر",
       ],
     };
-    return monthNames[lang][month];
+    return monthNames[lang][month - 1];
   }
   // get year
   public getYear(dateObj: Date = this.date): number {
@@ -182,11 +182,12 @@ class DateHelpers {
   }
   public getDaysPassed(dateObj: Date = this.date): number {
     const dt = new Date(dateObj);
+    const nowDate = new Date();
     const currentYear = dt.getFullYear();
     const current = dt.getTime();
     const previous = new Date(currentYear, 0, 1).getTime();
 
-    if (currentYear === dt.getFullYear()) {
+    if (nowDate.getFullYear() === dt.getFullYear()) {
       return Math.ceil((current - previous) / (24 * 60 * 60 * 1000));
     }
 
@@ -210,6 +211,8 @@ class DateHelpers {
       return `${year}-${month > 9 ? month : "0" + month}-${
         day > 9 ? day : "0" + day
       }`;
+    } else if (year > dt.getFullYear()) {
+      return `${year}-1-1`;
     }
     return `${year}-12-31`;
   }
@@ -222,7 +225,7 @@ class ParserHelpers {
     let foundUnit = null;
     let index = 0;
     const units = {
-      سنة_سنه_سنين: "YEAR",
+      سنة_سنه_سنين_سنوات: "YEAR",
       شهر_شهور_اشهر_أشهر: "MONTH",
       اسبوع_اسابيع_أسابيع: "WEEK",
       يوم_ايام: "DAY",
@@ -241,7 +244,6 @@ class ParserHelpers {
       }
       index++;
     }
-    // console.log(foundUnit);
 
     return foundUnit;
   };
@@ -252,7 +254,7 @@ class ParserHelpers {
     unit: string;
   } | null {
     const beforAfterRegex =
-      /(قبل|بعد) ?(\d+)? (ايام|اسابيع|(?:ا|أ)?شهر|(?:ا|أ)سبوع|يوم)/gm;
+      /(قبل|بعد) ?(\d+)? (ايام|اسابيع|(?:ا|أ)?شهر|(?:ا|أ)سبوع|يوم|سنين|سنوات|سنه)/gm;
     let match;
     while ((match = beforAfterRegex.exec(text)) !== null) {
       match.fullText = match[0];
@@ -270,7 +272,6 @@ export default class DateParser {
   private result = emptyDateTime;
   private helpers = new ParserHelpers();
   private date: Date = new Date();
-
   constructor(prompt: string) {
     this.userPrompt = this.helpers.preparedText(prompt);
   }
@@ -330,18 +331,27 @@ export default class DateParser {
       const newDate = new Date(theDate);
       switch (dateUnit) {
         case "YEAR":
+          console.log(`${oprator + object.number}`);
+
           newDate.setFullYear(
-            newDate.getFullYear() - Number(oprator + object.number)
+            newDate.getFullYear() + Number(`${oprator + object.number}`)
           );
           break;
         case "MONTH":
+          console.log(newDate.getMonth());
+          console.log("object.number", object.number);
+          console.log("oprator", oprator);
+
           newDate.setMonth(
-            newDate.getMonth() - Number(oprator + object.number)
+            newDate.getMonth() + Number(`${oprator + object.number}`)
           );
+          console.log(newDate.getMonth());
+
           break;
         case "WEEK":
           newDate.setDate(
-            newDate.getDate() - Number(oprator + `${Number(object.number) * 7}`)
+            newDate.getDate() +
+              Number(`${oprator + `${Number(object.number) * 7}`}`)
           );
           break;
         case "DAY":
@@ -365,7 +375,7 @@ export default class DateParser {
   }
 }
 
-const ress = new DateParser("قبل 50 ايام").execute();
+const ress = new DateParser("قبل 5 ").execute();
 console.log("-----------------------------------------");
 console.log(ress);
 console.log("-----------------------------------------");
