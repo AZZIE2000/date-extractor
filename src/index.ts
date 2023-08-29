@@ -1,37 +1,6 @@
 import axios from "axios";
-import { after } from "node:test";
 import similarity from "similarity";
 
-/**
- * curl ^
-  -H "Authorization: Bearer XTTA326P36O52BV2WZVN345JHFV4265O" ^
-  "https://api.wit.ai/message?v=20230825&q="
- */
-const commonDTTriggers = {
-  "last year|previous year|السنه الماضيه|السنه السابقه|العام الماضي|العام السابق":
-    "PREVIOUS_YEAR",
-  "last month|previous month|month before|الشهر الماضي|الشهر السابق":
-    "PREVIOUS_MONTH",
-  "last week|previous week|الشهر الماضي|الشهرالسابق|الشهر الفائت|الشهر الي فات|الشهر الي مضى":
-    "PREVIOUS_WEEK",
-  "yesterday|مبارح|امبارح|البارحه|اليوم الماضي": "PREVIOUS_DAY",
-};
-
-const apiCall = async (userQuestion: string) => {
-  axios
-    .get(`https://api.wit.ai/message?v=20230825&q=${userQuestion}`, {
-      headers: {
-        Authorization: "Bearer XTTA326P36O52BV2WZVN345JHFV4265O",
-      },
-    })
-    .then((res) => {
-      console.log(JSON.stringify(res.data));
-    })
-    .catch((err) => {
-      console.log(err);
-    });
-};
-// console.log(new Date());
 
 interface DateTime {
   year: number;
@@ -126,7 +95,7 @@ class DateHelpers {
   public getMonth(dateObj: Date = this.date): number {
     return dateObj.getMonth() + 1;
   }
-  // get week - this gets the week number of the year
+
   public getWeek(dateObj: Date = this.date) {
     const onejan = new Date(dateObj.getFullYear(), 0, 1);
     const days = Math.floor(
@@ -140,10 +109,7 @@ class DateHelpers {
     const dayNumber = dateObj.getDate();
     return dayNumber;
   }
-  /**
-   * @param dateObj
-   * @returns a string of the date in the format of **dd/mm/yyyy**
-   */
+
   public getDayDate(dateObj: Date = this.date): string {
     const month = dateObj.getMonth() + 1;
     const year = dateObj.getFullYear();
@@ -438,10 +404,6 @@ export default class DateParser {
   }
   public async execute() {
     this.preprocessText();
-    console.log("this.userPrompt");
-    console.log(this.userPrompt);
-    console.log("this.userPrompt");
-
     this.result = this.build();
     await this.processPrompt();
     return this.result;
