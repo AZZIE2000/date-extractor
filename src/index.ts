@@ -184,7 +184,7 @@ class DateHelpers {
   }
 }
 class ParserHelpers {
-  public preparedText = (text: string): string =>
+  public prepareText = (text: string): string =>
     text
       .normalize("NFKD")
       .replaceAll(/[\u064b-\u065f]/g, "")
@@ -299,9 +299,11 @@ export default class DateParser {
   private helpers = new ParserHelpers();
   private date: Date = new Date();
   private stopSearch: boolean = false;
+
   constructor(prompt: string) {
     this.userPrompt = prompt;
   }
+
   private build(date: Date = this.date): DateTime {
     const DTHelpers = new DateHelpers(date);
     return {
@@ -337,6 +339,7 @@ export default class DateParser {
       this.result[key] = newDateObj[key];
     });
     this.stopSearch = true;
+    this.date = date;
   }
 
   private beforeAfter_num_date_AR_process() {
@@ -396,7 +399,7 @@ export default class DateParser {
     }
   }
   private preprocessText() {
-    this.userPrompt = this.helpers.preparedText(this.userPrompt);
+    this.userPrompt = this.helpers.prepareText(this.userPrompt);
     const isArabic = this.helpers.textLanguage(this.userPrompt) === 1;
     if (isArabic) {
       this.userPrompt = this.helpers.simplifyText(this.userPrompt);
