@@ -278,25 +278,25 @@ class ParserHelpers {
 
   public async getWitAiResponse(text: string, isArabic: boolean) {
     console.log("WIT IS WORKING 🟢🟢🟢🟢🟢🟢🔴🔴🔴🔴🔴🔴🔴");
-    
+
     const token = isArabic
-    ? "XTTA326P36O52BV2WZVN345JHFV4265O"
-    : "JBDXCFH25LDRPPBLX5JERPD2VLWMPEDH";
+      ? "XTTA326P36O52BV2WZVN345JHFV4265O"
+      : "JBDXCFH25LDRPPBLX5JERPD2VLWMPEDH";
     return await axios
-    .get(`https://api.wit.ai/message?q=${text}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
-    .then((res) => {
-      // console.log(res);
-      
-      console.log("WIT SUCCESS 🟢🟢🟢🟢🟢🟢🔴🔴🔴🔴🔴🔴🔴");
-      return res?.data;
-    })
-    .catch((err) => {
-      console.log("WIT FAILED 🟢🟢🟢🟢🟢🟢🔴🔴🔴🔴🔴🔴🔴");
-      console.log(err);
+      .get(`https://api.wit.ai/message?q=${text}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then((res) => {
+        // console.log(res);
+
+        console.log("WIT SUCCESS 🟢🟢🟢🟢🟢🟢🔴🔴🔴🔴🔴🔴🔴");
+        return res?.data;
+      })
+      .catch((err) => {
+        console.log("WIT FAILED 🟢🟢🟢🟢🟢🟢🔴🔴🔴🔴🔴🔴🔴");
+        console.log(err);
       });
   }
 }
@@ -343,12 +343,13 @@ export default class DateParser {
     changedValues.forEach((key) => {
       this.result[key] = newDateObj[key];
     });
+    this.stopSearch = true;
   }
 
   private beforeAfter_num_date_AR_process() {
     if (this.stopSearch) return;
     const object = this.helpers.beforeAfter_num_date_AR(this.userPrompt);
-    if (!object) return (this.stopSearch = true);
+    if (!object) return;
     const oprator = object.direction == "قبل" ? "-" : "+";
     if (object) {
       const dateUnit = this.helpers.getUnit(object.unit);
@@ -391,6 +392,8 @@ export default class DateParser {
 
   private async processPrompt() {
     const isArabic = this.helpers.textLanguage(this.userPrompt) === 1;
+    console.log("isArabic", isArabic);
+
     if (isArabic) {
       this.beforeAfter_num_date_AR_process();
       //  filter 2
@@ -430,7 +433,7 @@ export default class DateParser {
   }
 }
 
-new DateParser("sales now").execute().then((res) => {
+new DateParser("مبيعات السنة الماضية").execute().then((res) => {
   console.log("-----------------------------------------");
   console.log(res);
   console.log("-----------------------------------------");
