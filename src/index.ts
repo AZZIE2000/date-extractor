@@ -219,33 +219,35 @@ class DateHelpers {
 }
 class ParserHelpers {
   public preparedText = (text: string): string =>
-    text.normalize("NFKD").replace(/[\u064b-\u065f]/g, "");
+    text
+      .normalize("NFKD")
+      .replaceAll(/[\u064b-\u065f]/g, "")
+      .replaceAll("ة", "ه");
 
   public textLanguage = (text: string): 1 | 2 => {
-    const preparedText = this.preparedText(text);
     const arabicRegex = /[\u0600-\u06FF\u0750-\u077F]/;
     const englishRegex = /[a-zA-Z]/;
-    if (arabicRegex.test(preparedText)) return 1;
-    if (englishRegex.test(preparedText)) return 2;
+    if (arabicRegex.test(text)) return 1;
+    if (englishRegex.test(text)) return 2;
     return 1;
   };
 
-  public getUnit = (text: string): "YEAR" | "MONTH" | "WEEK" | "DAY" | null => {
+  public getUnit = (text: string): "YEAR" | "MONTH" | "WEEK" | "DAY" | "HOUR" | null => {
     let foundUnit = null;
     let index = 0;
     const units = {
       سنة_سنه_سنين_سنوات: "YEAR",
-      شهر_شهور_اشهر_أشهر: "MONTH",
-      اسبوع_اسابيع_أسابيع: "WEEK",
+      شهر_شهور_اشهر_اشهر: "MONTH",
+      اسبوع_اسابيع_اسابيع: "WEEK",
       يوم_ايام: "DAY",
     };
     const dataToFilter = Object.keys(units);
-    const preparedText = this.preparedText(text);
+
     while (!foundUnit && index < dataToFilter.length) {
       const unit = dataToFilter[index].split("_");
       for (let i = 0; i < unit.length; i++) {
-        const score = similarity(preparedText, unit[i]);
-        // console.log(score);
+        const score = similarity(text, unit[i]);
+        
         if (score > 0.85) {
           foundUnit = units[dataToFilter[index]];
           break;
@@ -262,6 +264,8 @@ class ParserHelpers {
     number: string | null;
     unit: string;
   } | null {
+    console.log(text);
+
     const beforAfterRegex =
       /(قبل|بعد) ?(\d+)? (ايام|اسابيع|(?:ا|أ)?شهر|(?:ا|أ)سبوع|يوم|سنين|سنوات|سنه)/gm;
     let match;
@@ -270,6 +274,8 @@ class ParserHelpers {
       match.direction = match[1];
       match.number = !match[2] ? 1 : match[2];
       match.unit = match[3];
+      console.log("match");
+      console.log(match);
 
       return match;
     }
@@ -299,6 +305,21 @@ class ParserHelpers {
         console.log(err);
       });
   }
+  public simplifyText(text: string) {
+    return text
+      .replaceAll("يومين", "2 يوم")
+      .replaceAll("شهرين", "2 شهر")
+      .replaceAll("اسبوعين", "2 اسبوع")
+      .replaceAll("سنتين", "2 سنه")
+      .replaceAll("مبارح", "قبل يوم")
+      .replaceAll("امبارح", "قبل يوم")
+      .replaceAll("السنه الماضيه", "قبل سنه")
+      .replaceAll("السنه السابقه", "قبل سنه")
+      .replaceAll("العام الماضي", "قبل سنه")
+      .replaceAll("العام السابق", "قبل سنه")
+      .replaceAll("الشهر الماضي", "قبل شهر")
+      .replaceAll("الشهر السابق", "قبل شهر");
+  }
 }
 export default class DateParser {
   private userPrompt: string;
@@ -307,7 +328,7 @@ export default class DateParser {
   private date: Date = new Date();
   private stopSearch: boolean = false;
   constructor(prompt: string) {
-    this.userPrompt = this.helpers.preparedText(prompt);
+    this.userPrompt = prompt;
   }
   private build(date: Date = this.date): DateTime {
     const DTHelpers = new DateHelpers(date);
@@ -426,14 +447,28 @@ export default class DateParser {
     }
     // if faliure, return new Date()
   }
+  private preprocessText() {
+    // find the language
+    this.userPrompt = this.helpers.preparedText(this.userPrompt);
+    const isArabic = this.helpers.textLanguage(this.userPrompt) === 1;
+    if (isArabic) {
+      this.userPrompt = this.helpers.simplifyText(this.userPrompt);
+    }
+    // hanldle english cases
+  }
   public async execute() {
+    this.preprocessText();
+    console.log("this.userPrompt");
+    console.log(this.userPrompt);
+    console.log("this.userPrompt");
+
     this.result = this.build();
     await this.processPrompt();
     return this.result;
   }
 }
 
-new DateParser("مبيعات السنة الماضية").execute().then((res) => {
+new DateParser("مبيعات قبل ثلاث ايام ").execute().then((res) => {
   console.log("-----------------------------------------");
   console.log(res);
   console.log("-----------------------------------------");
