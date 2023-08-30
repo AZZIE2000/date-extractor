@@ -1,7 +1,6 @@
 import axios from "axios";
 import similarity from "similarity";
 
-
 interface DateTime {
   year: number;
   quarter: number;
@@ -241,6 +240,36 @@ class ParserHelpers {
     }
     return null;
   }
+  // public parseRelativeDate(text: string):
+  //   | {
+  //       fullText: string;
+  //       direction: string;
+  //       number: string | null;
+  //       unit: string;
+  //     }[]
+  //   | null {
+  //   const relativeDateRegex =
+  //     /(before|after|in)? ?(\d+) ?(day(?:s)?|week(?:s)?|month(?:s)?|year(?:s)?) ?(ago)?/gm;
+
+  //   let match;
+  //   const result = [];
+
+  //   while ((match = relativeDateRegex.exec(text)) !== null) {
+  //     const parsedMatch = {
+  //       fullText: match[0],
+  //       direction: match[1],
+  //       number: match[2] || "1",
+  //       unit: match[3],
+  //     };
+  //     result.push(parsedMatch);
+  //   }
+
+  //   if (result.length > 0) {
+  //     return result;
+  //   }
+
+  //   return null;
+  // }
 
   public async getWitAiResponse(text: string, isArabic: boolean) {
     const token = isArabic
@@ -413,8 +442,25 @@ export default class DateParser {
   }
 }
 
-new DateParser("مبيعات بطيخ").execute().then((res) => {
-  console.log("-----------------------------------------");
-  console.log(res);
-  console.log("-----------------------------------------");
-});
+// new DateParser("مبيعات بطيخ").execute().then((res) => {
+//   console.log("-----------------------------------------");
+//   console.log(res);
+//   console.log("-----------------------------------------");
+// });
+const text = "in 5 days ago ";
+const relativeDateRegex =
+  /(before|after|in)? ?(\d+) ?(day(?:s)?|week(?:s)?|month(?:s)?|year(?:s)?|hour(?:s)?) ?(ago)?/gm;
+
+let match;
+const result = [];
+
+while ((match = relativeDateRegex.exec(text)) !== null) {
+  const parsedMatch = {
+    fullText: match[0],
+    direction: match[1],
+    number: match[2] || "1",
+    unit: match[3],
+    ago: match[4],
+  };
+  console.log(match);
+}
