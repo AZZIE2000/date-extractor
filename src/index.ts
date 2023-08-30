@@ -462,5 +462,5 @@ while ((match = relativeDateRegex.exec(text)) !== null) {
     unit: match[3],
     ago: match[4],
   };
-  console.log(match);
+  // console.log(match);
 }
