@@ -348,9 +348,3 @@ export default class DateParser {
     return this.result;
   }
 }
-
-new DateParser("اليوم").execute().then((res) => {
-  console.log("-----------------------------------------");
-  console.log(res);
-  console.log("-----------------------------------------");
-});
