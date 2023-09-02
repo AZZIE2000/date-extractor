@@ -334,6 +334,7 @@ export default class DateParser {
         });
     }
   }
+
   private preprocessText() {
     this.userPrompt = this.helpers.prepareText(this.userPrompt);
     const isArabic = this.helpers.textLanguage(this.userPrompt) === 1;
