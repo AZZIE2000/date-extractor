@@ -1,52 +1,7 @@
 import axios from "axios";
 import similarity from "similarity";
-
-interface DateTime {
-  year: number;
-  quarter: number;
-  month: number;
-  week: number; // week of the year
-  day: number;
-  hour: number;
-
-  prev_year: number;
-  prev_month: number;
-  prev_month_year: number; // the year of the previous month
-  prev_quarter: number;
-  prev_quarter_year: number; // the year of the previous quarter
-  curr_day: number;
-  curr_quarter: number;
-  days_of_year: number; // days passed since the beginning of the asked year
-
-  last_year_date: string; // last date ever in the year (31/12/2020) || 72/8/2023
-  last_date: string; // today's date
-
-  day_date: string; // the date of the asked about as in "sales last monday" 1/8/2023
-  month_name_en: string;
-  month_name_ar: string;
-}
-
-const emptyDateTime: DateTime = {
-  year: 0,
-  quarter: 0,
-  month: 0,
-  week: 0,
-  day: 0,
-  hour: 0,
-  prev_month: 0,
-  prev_month_year: 0,
-  prev_quarter_year: 0,
-  prev_quarter: 0,
-  curr_quarter: 0,
-  prev_year: 0,
-  curr_day: 0,
-  days_of_year: 0,
-  last_year_date: "",
-  last_date: "",
-  day_date: "",
-  month_name_ar: "",
-  month_name_en: "",
-};
+import constants from "./constants";
+import { DateTime } from "./types";
 
 class DateHelpers {
   protected date: Date;
@@ -54,43 +9,13 @@ class DateHelpers {
     this.date = date;
   }
   public getMonthName(lang: "en" | "ar", month: number) {
-    const monthNames = {
-      en: [
-        "january",
-        "february",
-        "march",
-        "april",
-        "may",
-        "june",
-        "july ",
-        "august",
-        "september",
-        "october",
-        "november",
-        "december",
-      ],
-      ar: [
-        "يناير",
-        "فبراير",
-        "مارس",
-        "أبريل",
-        "مايو",
-        "يونيو",
-        "يوليو ",
-        "أغسطس",
-        "سبتمبر",
-        "أكتوبر",
-        "نوفمبر",
-        "ديسمبر",
-      ],
-    };
-    return monthNames[lang][month - 1];
+    return constants.monthNames[lang][month - 1];
   }
-  // get year
+
   public getYear(dateObj: Date = this.date): number {
     return dateObj.getFullYear();
   }
-  // get month
+
   public getMonth(dateObj: Date = this.date): number {
     return dateObj.getMonth() + 1;
   }
@@ -114,10 +39,12 @@ class DateHelpers {
     const year = dateObj.getFullYear();
     return `${dateObj.getDate()}/${month > 9 ? month : "" + month}/${year}`;
   }
+
   public getHour(dateObj: Date = this.date): number {
     const hour = dateObj.getHours();
     return hour;
   }
+
   public getPreviousMonth(dateObj: Date = this.date): number {
     const currentMonth = dateObj.getMonth();
     if (currentMonth === 0) {
@@ -125,39 +52,43 @@ class DateHelpers {
     }
     return currentMonth;
   }
+
   public getPreviousMonthYear(dateObj: Date = this.date): number {
     const currentMonth = dateObj.getMonth();
     const currentYear = dateObj.getFullYear();
     if (currentMonth === 0) return currentYear - 1;
     return currentYear;
   }
+
   public getPreviousQuarterYear(dateObj: Date = this.date): number {
     const currentQuarter = Math.floor(dateObj.getMonth() / 3) + 1;
     const currentYear = dateObj.getFullYear();
     if (currentQuarter === 1) return currentYear - 1;
     return currentYear;
   }
+
   public getQuarter(dateObj: Date = this.date): number {
     return Math.floor(dateObj.getMonth() / 3) + 1;
   }
+
   public getPreviousQuarter(dateObj: Date = this.date): number {
     const currentQuarter = Math.floor(dateObj.getMonth() / 3) + 1;
     if (currentQuarter === 1) return 4;
     return currentQuarter - 1;
   }
+
   public getDaysPassed(dateObj: Date = this.date): number {
     const dt = new Date(dateObj);
     const nowDate = new Date();
     const currentYear = dt.getFullYear();
     const current = dt.getTime();
     const previous = new Date(currentYear, 0, 1).getTime();
-
     if (nowDate.getFullYear() === dt.getFullYear()) {
       return Math.ceil((current - previous) / (24 * 60 * 60 * 1000));
     }
-
     return 365;
   }
+
   public getLastDate(dateObj: Date = this.date) {
     const dt = new Date();
     if (dateObj.getFullYear() === dt.getFullYear()) {
@@ -167,6 +98,7 @@ class DateHelpers {
     }
     return `12-31`;
   }
+  
   public getLastYearDate(dateObj: Date = this.date) {
     const dt = new Date();
     const year = dateObj.getFullYear();
@@ -203,19 +135,14 @@ class ParserHelpers {
     if (!text) return null;
     let foundUnit = null;
     let index = 0;
-    const units = {
-      سنة_سنه_سنين_سنوات_year_years: "YEAR",
-      شهر_شهور_اشهر_اشهر_month_months: "MONTH",
-      اسبوع_اسابيع_اسابيع_week_weeks: "WEEK",
-      يوم_ايام_day_days: "DAY",
-    };
-    const dataToFilter = Object.keys(units);
+
+    const dataToFilter = Object.keys(constants.dateAlt);
     while (!foundUnit && index < dataToFilter.length) {
       const unit = dataToFilter[index].split("_");
       for (let i = 0; i < unit.length; i++) {
         const score = similarity(text, unit[i]);
         if (score > 0.85) {
-          foundUnit = units[dataToFilter[index]];
+          foundUnit = constants.dateAlt[dataToFilter[index]];
           break;
         }
       }
@@ -229,10 +156,8 @@ class ParserHelpers {
     number: string | null;
     unit: string;
   } | null {
-    const beforAfterRegex =
-      /(قبل|بعد) ?(\d+)? (ايام|اسابيع|(?:ا|أ)?شهر|(?:ا|أ)سبوع|يوم|سنين|سنوات|سنه)/gm;
     let match;
-    while ((match = beforAfterRegex.exec(text)) !== null) {
+    while ((match = constants.relativeDateRegexAr.exec(text)) !== null) {
       match.fullText = match[0];
       match.direction = match[1];
       match.number = !match[2] ? 1 : match[2];
@@ -249,11 +174,8 @@ class ParserHelpers {
     unit: string;
     ago: string;
   } | null {
-    const relativeDateRegex =
-      // |hour(?:s)? | maybe later
-      /(before|after|in)? ?(\d+) ?(day(?:s)?|week(?:s)?|month(?:s)?|year(?:s)?) ?(ago)?/gm;
     let match;
-    while ((match = relativeDateRegex.exec(text)) !== null) {
+    while ((match = constants.relativeDateRegexEn.exec(text)) !== null) {
       match.fullText = match[0];
       match.direction = match[1] || match[4];
       match.number = match[2] || "1";
@@ -319,37 +241,16 @@ class ParserHelpers {
       });
   }
   public simplifyText(text: string) {
-    return text
-      .replaceAll("يومين", "2 يوم")
-      .replaceAll("شهرين", "2 شهر")
-      .replaceAll("اسبوعين", "2 اسبوع")
-      .replaceAll("سنتين", "2 سنه")
-      .replaceAll("مبارح", "قبل يوم")
-      .replaceAll("امبارح", "قبل يوم")
-      .replaceAll("السنه الماضيه", "قبل سنه")
-      .replaceAll("السنه السابقه", "قبل سنه")
-      .replaceAll("العام الماضي", "قبل سنه")
-      .replaceAll("العام السابق", "قبل سنه")
-      .replaceAll("الشهر الماضي", "قبل شهر")
-      .replaceAll("الشهر السابق", "قبل شهر")
-      .replaceAll("الشهر الفائت", "قبل شهر")
-      .replaceAll("الشهر الي فات", "قبل شهر")
-      .replaceAll("الشهر الي مضى", "قبل شهر")
-      .replaceAll("الاسبوع الماضي", "قبل اسبوع")
-      .replaceAll("الاسبوع السابق", "قبل اسبوع")
-      .replaceAll("الاسبوع الفائت", "قبل اسبوع")
-      .replaceAll("الاسبوع الي فات", "قبل اسبوع")
-      .replaceAll("الاسبوع الي مضى", "قبل اسبوع")
-      .replaceAll("اليوم الماضي", "قبل يوم")
-      .replaceAll("اليوم السابق", "قبل يوم")
-      .replaceAll("قبل يومين", "قبل 2 يوم")
-      .replaceAll("اول مبارح", "قبل 2 يوم")
-      .replaceAll("اول امبارح", "قبل 2 يوم");
+    let simplifiedText = text;
+    for (const [search, replace] of constants.wordsToReplace) {
+      simplifiedText = simplifiedText.replaceAll(search, replace);
+    }
+    return simplifiedText;
   }
 }
 export default class DateParser {
   private userPrompt: string;
-  private result = emptyDateTime;
+  private result = constants.emptyDateTime;
   private helpers = new ParserHelpers();
   private date: Date = new Date();
   private stopSearch: boolean = false;
@@ -500,7 +401,7 @@ export default class DateParser {
   }
 }
 
-new DateParser("1 day ago").execute().then((res) => {
+new DateParser("مبارح").execute().then((res) => {
   console.log("-----------------------------------------");
   console.log(res);
   console.log("-----------------------------------------");
