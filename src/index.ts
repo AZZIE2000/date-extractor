@@ -210,6 +210,7 @@ class ParserHelpers {
         return null;
       });
   }
+
   public simplifyText(text: string) {
     let simplifiedText = text;
     for (const [search, replace] of constants.wordsToReplace) {
