@@ -267,81 +267,58 @@ export default class DateParser {
     this.stopSearch = true;
     this.date = date;
   }
-  private parseRelativeDateEN_process() {
+  private parseRelativeDateProcess(isArabic: boolean) {
     if (this.stopSearch) return;
-    const object = this.helpers.parseRelativeDateEN(this.userPrompt);
-    if (!object) return;
-    const dir = object.direction;
-    const oprator = dir == "before" || dir === "ago" ? "-" : "+";
-    const dateUnit = this.helpers.getUnit(object.unit);
-    if (!dateUnit) return console.log("no unit");
-    const theDate = this.date;
-    const newDate = new Date(theDate);
-    switch (dateUnit) {
-      case "YEAR":
-        newDate.setFullYear(
-          newDate.getFullYear() + Number(`${oprator + object.number}`)
-        );
-        break;
-      case "MONTH":
-        newDate.setMonth(
-          newDate.getMonth() + Number(`${oprator + object.number}`)
-        );
-        break;
-      case "WEEK":
-        newDate.setDate(
-          newDate.getDate() +
-            Number(`${oprator + `${Number(object.number) * 7}`}`)
-        );
-        break;
-      case "DAY":
-        newDate.setDate(newDate.getDate() + Number(oprator + object.number));
-        break;
-    }
-    if (this.date !== newDate) this.validateNewDate(newDate);
-  }
-  private parseRelativeDateAR_process() {
-    if (this.stopSearch) return;
-    const object = this.helpers.parseRelativeDateAR(this.userPrompt);
-    if (!object) return;
-    const oprator = object.direction == "قبل" ? "-" : "+";
 
+    const object = isArabic
+      ? this.helpers.parseRelativeDateAR(this.userPrompt)
+      : this.helpers.parseRelativeDateEN(this.userPrompt);
+
+    if (!object) return;
+
+    const dir = isArabic
+      ? object.direction === "بعد"
+        ? "+"
+        : "-"
+      : object.direction === "before" || object.direction === "ago"
+      ? "-"
+      : "+";
     const dateUnit = this.helpers.getUnit(object.unit);
-    if (!dateUnit) return console.log("no unit");
+
+    if (!dateUnit) {
+      console.log("No unit");
+      return;
+    }
+
     const theDate = this.date;
     const newDate = new Date(theDate);
+
     switch (dateUnit) {
       case "YEAR":
         newDate.setFullYear(
-          newDate.getFullYear() + Number(`${oprator + object.number}`)
+          newDate.getFullYear() + Number(`${dir}${object.number}`)
         );
         break;
       case "MONTH":
-        newDate.setMonth(
-          newDate.getMonth() + Number(`${oprator + object.number}`)
-        );
+        newDate.setMonth(newDate.getMonth() + Number(`${dir}${object.number}`));
         break;
       case "WEEK":
         newDate.setDate(
-          newDate.getDate() +
-            Number(`${oprator + `${Number(object.number) * 7}`}`)
+          newDate.getDate() + Number(`${dir}${Number(object.number) * 7}`)
         );
         break;
       case "DAY":
-        newDate.setDate(newDate.getDate() + Number(oprator + object.number));
+        newDate.setDate(newDate.getDate() + Number(`${dir}${object.number}`));
         break;
     }
+
     if (this.date !== newDate) this.validateNewDate(newDate);
   }
 
   private async processPrompt() {
     const isArabic = this.helpers.textLanguage(this.userPrompt) === 1;
 
-    if (isArabic) {
-      this.parseRelativeDateAR_process();
-    } else {
-      this.parseRelativeDateEN_process();
-    }
+    this.parseRelativeDateProcess(isArabic);
     if (!this.stopSearch) {
       console.log("🟢🟢🟢🟢🟢");
 
@@ -372,7 +349,7 @@ export default class DateParser {
   }
 }
 
-new DateParser("مبارح").execute().then((res) => {
+new DateParser("اليوم").execute().then((res) => {
   console.log("-----------------------------------------");
   console.log(res);
   console.log("-----------------------------------------");
