@@ -222,7 +222,7 @@ class ParserHelpers {
     }
     return foundUnit;
   };
-  public beforeAfter_num_date_AR(text: string): {
+  public parseRelativeDateAR(text: string): {
     fullText: string;
     direction: string;
     number: string | null;
@@ -240,6 +240,29 @@ class ParserHelpers {
     }
     return null;
   }
+
+  public parseRelativeDateEN(text: string): {
+    fullText: string;
+    direction: "before" | "after" | "in" | "ago";
+    number: string;
+    unit: string;
+    ago: string;
+  } | null {
+    const relativeDateRegex =
+      /(before|after|in)? ?(\d+) ?(day(?:s)?|week(?:s)?|month(?:s)?|year(?:s)?|hour(?:s)?) ?(ago)?/gm;
+    let match;
+    while ((match = relativeDateRegex.exec(text)) !== null) {
+      match.fullText = match[0];
+      match.direction = match[1] || match[4];
+      match.number = match[2] || "1";
+      match.unit = match[3];
+      // match.ago = match[4];
+
+      return match;
+    }
+    return null;
+  }
+
   // public parseRelativeDate(text: string):
   //   | {
   //       fullText: string;
@@ -370,47 +393,53 @@ export default class DateParser {
     this.stopSearch = true;
     this.date = date;
   }
-
-  private beforeAfter_num_date_AR_process() {
+  private parseRelativeDateEN_process() {
     if (this.stopSearch) return;
-    const object = this.helpers.beforeAfter_num_date_AR(this.userPrompt);
+    const object = this.helpers.parseRelativeDateEN(this.userPrompt);
+    if (!object) return;
+    // (before|after|in | ago)
+    const dir = object.direction;
+    const oprator = dir == "before" || dir === "ago" ? "-" : "+";
+  }
+  private parseRelativeDateAR_process() {
+    if (this.stopSearch) return;
+    const object = this.helpers.parseRelativeDateAR(this.userPrompt);
     if (!object) return;
     const oprator = object.direction == "قبل" ? "-" : "+";
-    if (object) {
-      const dateUnit = this.helpers.getUnit(object.unit);
-      if (!dateUnit) return console.log("no unit");
-      const theDate = this.date;
-      const newDate = new Date(theDate);
-      switch (dateUnit) {
-        case "YEAR":
-          newDate.setFullYear(
-            newDate.getFullYear() + Number(`${oprator + object.number}`)
-          );
-          break;
-        case "MONTH":
-          newDate.setMonth(
-            newDate.getMonth() + Number(`${oprator + object.number}`)
-          );
-          break;
-        case "WEEK":
-          newDate.setDate(
-            newDate.getDate() +
-              Number(`${oprator + `${Number(object.number) * 7}`}`)
-          );
-          break;
-        case "DAY":
-          newDate.setDate(newDate.getDate() + Number(oprator + object.number));
-          break;
-      }
-      if (this.date !== newDate) this.validateNewDate(newDate);
+
+    const dateUnit = this.helpers.getUnit(object.unit);
+    if (!dateUnit) return console.log("no unit");
+    const theDate = this.date;
+    const newDate = new Date(theDate);
+    switch (dateUnit) {
+      case "YEAR":
+        newDate.setFullYear(
+          newDate.getFullYear() + Number(`${oprator + object.number}`)
+        );
+        break;
+      case "MONTH":
+        newDate.setMonth(
+          newDate.getMonth() + Number(`${oprator + object.number}`)
+        );
+        break;
+      case "WEEK":
+        newDate.setDate(
+          newDate.getDate() +
+            Number(`${oprator + `${Number(object.number) * 7}`}`)
+        );
+        break;
+      case "DAY":
+        newDate.setDate(newDate.getDate() + Number(oprator + object.number));
+        break;
     }
+    if (this.date !== newDate) this.validateNewDate(newDate);
   }
 
   private async processPrompt() {
     const isArabic = this.helpers.textLanguage(this.userPrompt) === 1;
 
     if (isArabic) {
-      this.beforeAfter_num_date_AR_process();
+      this.parseRelativeDateAR_process();
     } else {
       // filter 1 en
     }
@@ -447,25 +476,18 @@ export default class DateParser {
 //   console.log(res);
 //   console.log("-----------------------------------------");
 // });
-const text = "in 5 days ago ";
+const text = "in 5 days ";
 const relativeDateRegex =
   /(before|after|in)? ?(\d+) ?(day(?:s)?|week(?:s)?|month(?:s)?|year(?:s)?|hour(?:s)?) ?(ago)?/gm;
 
 let match;
-const result = [];
 
 while ((match = relativeDateRegex.exec(text)) !== null) {
   const parsedMatch = {
     fullText: match[0],
-    direction: match[1],
+    direction: match[1] || match[4],
     number: match[2] || "1",
     unit: match[3],
-    ago: match[4],
   };
-  // console.log(match);
-  // console.log(match);
-  // console.log(match);
-  // console.log(match);
-  // console.log(match);
-
+  console.log(parsedMatch);
 }
