@@ -320,8 +320,6 @@ export default class DateParser {
 
     this.parseRelativeDateProcess(isArabic);
     if (!this.stopSearch) {
-      console.log("🟢🟢🟢🟢🟢");
-
       await this.helpers
         .getWitAiResponse(this.userPrompt, isArabic)
         .then((res) => {
