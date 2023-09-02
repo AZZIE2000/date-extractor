@@ -5,9 +5,11 @@ import { DateTime } from "./types";
 
 class DateHelpers {
   protected date: Date;
+  
   constructor(date: Date) {
     this.date = date;
   }
+
   public getMonthName(lang: "en" | "ar", month: number) {
     return constants.monthNames[lang][month - 1];
   }
@@ -98,7 +100,7 @@ class DateHelpers {
     }
     return `12-31`;
   }
-  
+
   public getLastYearDate(dateObj: Date = this.date) {
     const dt = new Date();
     const year = dateObj.getFullYear();
