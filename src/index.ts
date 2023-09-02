@@ -341,6 +341,7 @@ export default class DateParser {
       this.userPrompt = this.helpers.simplifyText(this.userPrompt);
     }
   }
+
   public async execute() {
     this.preprocessText();
     this.result = this.build();
