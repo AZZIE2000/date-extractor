@@ -5,7 +5,7 @@ import { DateTime } from "./types";
 
 class DateHelpers {
   protected date: Date;
-  
+
   constructor(date: Date) {
     this.date = date;
   }
@@ -124,10 +124,8 @@ class ParserHelpers {
       .replaceAll("ة", "ه");
 
   public textLanguage = (text: string): 1 | 2 => {
-    const arabicRegex = /[\u0600-\u06FF\u0750-\u077F]/;
-    const englishRegex = /[a-zA-Z]/;
-    if (arabicRegex.test(text)) return 1;
-    if (englishRegex.test(text)) return 2;
+    if (constants.arabicRegex.test(text)) return 1;
+    if (constants.englishRegex.test(text)) return 2;
     return 1;
   };
 
@@ -152,6 +150,7 @@ class ParserHelpers {
     }
     return foundUnit;
   };
+
   public parseRelativeDateAR(text: string): {
     fullText: string;
     direction: string;
@@ -188,37 +187,6 @@ class ParserHelpers {
     }
     return null;
   }
-
-  // public parseRelativeDate(text: string):
-  //   | {
-  //       fullText: string;
-  //       direction: string;
-  //       number: string | null;
-  //       unit: string;
-  //     }[]
-  //   | null {
-  //   const relativeDateRegex =
-  //     /(before|after|in)? ?(\d+) ?(day(?:s)?|week(?:s)?|month(?:s)?|year(?:s)?) ?(ago)?/gm;
-
-  //   let match;
-  //   const result = [];
-
-  //   while ((match = relativeDateRegex.exec(text)) !== null) {
-  //     const parsedMatch = {
-  //       fullText: match[0],
-  //       direction: match[1],
-  //       number: match[2] || "1",
-  //       unit: match[3],
-  //     };
-  //     result.push(parsedMatch);
-  //   }
-
-  //   if (result.length > 0) {
-  //     return result;
-  //   }
-
-  //   return null;
-  // }
 
   public async getWitAiResponse(text: string, isArabic: boolean) {
     const token = isArabic
