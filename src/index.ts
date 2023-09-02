@@ -399,7 +399,6 @@ export default class DateParser {
     if (this.stopSearch) return;
     const object = this.helpers.parseRelativeDateEN(this.userPrompt);
     if (!object) return;
-    // (before|after|in | ago)
     const dir = object.direction;
     const oprator = dir == "before" || dir === "ago" ? "-" : "+";
     const dateUnit = this.helpers.getUnit(object.unit);
