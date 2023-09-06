@@ -34,7 +34,6 @@ const constants = {
     يوم_ايام_day_days: "DAY",
   },
   relativeDateRegexEn:
-    // |hour(?:s)? | maybe later
     /(before|after|in)? ?(\d+) ?(day(?:s)?|week(?:s)?|month(?:s)?|year(?:s)?) ?(ago)?/gm,
   relativeDateRegexAr:
     /(قبل|بعد) ?(\d+)? (ايام|اسابيع|(?:ا|أ)?شهر|(?:ا|أ)سبوع|يوم|سنين|سنوات|سنه)/gm,
