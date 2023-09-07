@@ -181,7 +181,6 @@ class ParserHelpers {
       match.direction = match[1] || match[4];
       match.number = match[2] || "1";
       match.unit = match[3];
-      // match.ago = match[4];
 
       return match;
     }
@@ -219,6 +218,17 @@ class ParserHelpers {
     return simplifiedText;
   }
 }
+
+/**
+ * @class DateParser
+ * @description This class is responsible for parsing the date from the user prompt
+ * @param {string} prompt - The user prompt
+ * @returns {DateTime} - The date object
+ * @example
+ * const dateParser = new DateParser("بعد 3 ايام");
+ * const date = await dateParser.execute();
+ * console.log(date);
+ */
 export default class DateParser {
   private userPrompt: string;
   private result = constants.emptyDateTime;
@@ -230,6 +240,11 @@ export default class DateParser {
     this.userPrompt = prompt;
   }
 
+  /**
+   *
+   * @param date
+   * @returns build the date object
+   */
   private build(date: Date = this.date): DateTime {
     const DTHelpers = new DateHelpers(date);
     return {
@@ -339,7 +354,7 @@ export default class DateParser {
       this.userPrompt = this.helpers.simplifyText(this.userPrompt);
     }
   }
-
+  // From here the public methods
   public async execute() {
     this.preprocessText();
     this.result = this.build();
