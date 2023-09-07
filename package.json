@@ -2,6 +2,9 @@
   "name": "date-extractor",
   "version": "1.0.0",
   "description": "text to date extractor in arabic and english",
+  "main":"dist/index.js",
+  "module": "dist/esm/index.js",
+  "types": "dist/types.d.ts",
   "directories": {
     "test": "test"
   },
@@ -11,12 +14,7 @@
     "NLP"
   ],
   "scripts": {
-    "build": "tsc",
-    "prepare": "npm run build",
-    "version": "git add -A src",
-    "postversion": "git push && git push --tags",
-    "dev": "ts-node-dev --no-notify --respawn --transpile-only src/index",
-    "test": "jest"
+    "build": "rollup -c --bundleConfigAsCjs"
   },
   "repository": {
     "type": "git",
@@ -24,9 +22,6 @@
   },
   "author": "Infotointell",
   "license": "ISC",
-  "files": [
-    "src"
-  ],
   "bugs": {
     "url": "https://github.com/nlp-infotointell/date-extractor/issues"
   },
