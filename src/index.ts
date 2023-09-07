@@ -286,7 +286,6 @@ export default class DateParser {
     const dateUnit = this.helpers.getUnit(object.unit);
 
     if (!dateUnit) {
-      console.log("No unit");
       return;
     }
 
@@ -348,30 +347,3 @@ export default class DateParser {
     return this.result;
   }
 }
-
-// new DateParser("").execute().then((res) => console.log(res));
-
-// const regex = new RegExp(
-//   "(0[1-9]|1\\d|2[0-8]|29(?=[-/]\\d\\d[-/](?!1[01345789]00|2[1235679]00)\\d\\d(?:[02468][048]|[13579][26]))|30(?![-/]02)|31(?=[-/]0[13578]|[-/]1[02]))[-/](0[1-9]|1[0-2])([-/]([12]\\d{3}))?",
-//   "gmi"
-// );
-// const str = `01-05-2001
-// 20/11
-// 01/01/1999
-// `;
-// let m;
-
-// while ((m = regex.exec(str)) !== null) {
-//   // This is necessary to avoid infinite loops with zero-width matches
-//   if (m.index === regex.lastIndex) {
-//     regex.lastIndex++;
-//   }
-
-//   // The result can be accessed through the `m`-variable.
-//   m.forEach((match, groupIndex) => {
-//     console.log(`Found match, group ${groupIndex}: ${match}`);
-//   });
-// }
-/**
- * (\d{1,2}(?:\/|-|\.)\d{1,2}(?:\/|-|\.)(?:\d{4}))|(\d{1,2}((?:st|nd|rd|th)(\sof)?)?)\s?((?:jan(?:uary)?|feb(?:ruary)?|mar(?:rch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:tember)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember))|0?[1-9]|0[1-2])((?:\/|-|\.)|\s)((?:\d{4}))?
- */
